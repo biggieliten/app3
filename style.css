@@ -291,24 +291,42 @@ footer {
 
 @media (max-width: 700px) {
 	.page-shell {
-		width: min(100% - 26px, 1160px);
+		width: min(100% - 24px, 1160px);
 	}
 
 	.topbar {
+		align-items: flex-start;
+		gap: 14px;
 		padding: 18px 0;
 	}
 
+	.logo {
+		font-size: 14px;
+		letter-spacing: .1em;
+	}
+
+	.logo-mark {
+		flex: 0 0 auto;
+	}
+
 	.top-note {
+		max-width: 132px;
+		text-align: right;
+		line-height: 1.35;
 		font-size: 9px;
 	}
 
 	.intro {
 		display: block;
-		padding: 53px 4% 37px;
+		padding: 34px 4% 24px;
 	}
 
 	.intro h1 {
 		font-size: 62px;
+	}
+
+	.intro h1 em {
+		font-size: .95em;
 	}
 
 	.lede {
@@ -320,8 +338,12 @@ footer {
 	}
 
 	.scorebar {
-		gap: 25px;
+		gap: 16px;
 		padding: 14px;
+	}
+
+	.scorebar span {
+		font-size: 9px;
 	}
 
 	.scorebar b {
@@ -344,8 +366,102 @@ footer {
 		box-shadow: 6px 6px 0 var(--coral);
 	}
 
+	.canvas-wrap {
+		height: min(70svh, 600px);
+	}
+
+	canvas {
+		width: 100%;
+		height: 100%;
+	}
+
 	footer {
+		flex-wrap: wrap;
+		gap: 10px;
 		padding-top: 31px;
 		font-size: 8px;
+	}
+}
+
+@media (max-width: 420px) {
+	.page-shell {
+		width: calc(100% - 18px);
+	}
+
+	.topbar {
+		padding: 14px 0;
+	}
+
+	.logo {
+		gap: 7px;
+		font-size: 12px;
+	}
+
+	.logo-mark {
+		width: 28px;
+		height: 27px;
+		padding: 4px;
+	}
+
+	.logo-mark i {
+		width: 7px;
+		height: 16px;
+	}
+
+	.logo-mark i:last-child {
+		height: 20px;
+	}
+
+	.top-note {
+		max-width: 112px;
+		font-size: 8px;
+	}
+
+	.intro {
+		padding: 26px 3% 18px;
+	}
+
+	.intro h1 {
+		font-size: 54px;
+	}
+
+	.lede {
+		margin-top: 20px;
+		font-size: 13px;
+	}
+
+	.scorebar {
+		gap: 12px;
+		padding: 12px;
+	}
+
+	.scorebar b {
+		font-size: 16px;
+	}
+
+	.icon-button {
+		font-size: 9px;
+	}
+
+	.game-overlay {
+		padding: 18px;
+	}
+
+	.game-overlay h2 {
+		font-size: 39px;
+	}
+
+	.game-overlay p:not(.eyebrow) {
+		font-size: 13px;
+	}
+
+	.controls {
+		gap: 8px 12px;
+		padding: 10px 12px;
+		font-size: 8px;
+	}
+
+	footer {
+		font-size: 7px;
 	}
 }
