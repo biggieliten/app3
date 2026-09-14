@@ -1,10 +1,10 @@
 :root {
-	--ink: #173b4a;
-	--blue: #2d779a;
-	--coral: #f15a4a;
-	--yellow: #f4d76b;
-	--paper: #fff8e8;
-	--line: rgba(23, 59, 74, .2);
+	--ink: #241817;
+	--blue: #b52d22;
+	--coral: #ef5a2f;
+	--yellow: #f4c542;
+	--paper: #f3e4c5;
+	--line: rgba(36, 24, 23, .25);
 }
 
 * {
@@ -26,7 +26,7 @@ body::before {
 	content: "";
 	opacity: .28;
 	pointer-events: none;
-	background-image: radial-gradient(#d5bd7a 0.8px, transparent .8px);
+	background-image: radial-gradient(#c58b54 0.8px, transparent .8px);
 	background-size: 13px 13px;
 }
 
@@ -134,7 +134,7 @@ footer {
 .lede {
 	max-width: 510px;
 	margin: 26px 0 0;
-	color: #60737a;
+	color: #765754;
 	font-size: 16px;
 	line-height: 1.55;
 }
@@ -159,7 +159,7 @@ footer {
 }
 
 .tip-card small {
-	color: #60737a;
+	color: #765754;
 	font: 11px/1.4 "DM Mono", monospace;
 }
 
@@ -174,7 +174,7 @@ footer {
 	align-items: center;
 	gap: 48px;
 	padding: 18px 22px;
-	color: #d9edf0;
+	color: #ffe8bd;
 }
 
 .scorebar div {
@@ -204,7 +204,7 @@ footer {
 .canvas-wrap {
 	position: relative;
 	overflow: hidden;
-	background: #66c9e8;
+	background: #d95d35;
 }
 
 canvas {
@@ -221,7 +221,7 @@ canvas {
 	place-content: center;
 	padding: 25px;
 	text-align: center;
-	background: rgba(23, 59, 74, .79);
+	background: rgba(36, 24, 23, .86);
 	color: white;
 }
 
@@ -237,7 +237,7 @@ canvas {
 }
 
 .game-overlay p:not(.eyebrow) {
-	color: #d9edf0;
+	color: #ffe8bd;
 }
 
 .game-overlay button {
@@ -261,7 +261,7 @@ canvas {
 	display: flex;
 	gap: 28px;
 	padding: 14px 22px;
-	color: #d9edf0;
+	color: #ffe8bd;
 }
 
 kbd {
@@ -285,7 +285,7 @@ footer {
 	display: flex;
 	justify-content: space-between;
 	padding: 44px 0 28px;
-	color: #779097;
+	color: #8c665e;
 	font-size: 10px;
 }
 

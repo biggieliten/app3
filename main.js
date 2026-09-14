@@ -6,6 +6,8 @@ const finalScoreLabel = document.querySelector("#finalScore");
 const startOverlay = document.querySelector("#startOverlay");
 const gameOverOverlay = document.querySelector("#gameOverOverlay");
 const muteButton = document.querySelector("#muteButton");
+const birdImage = new Image();
+birdImage.src = "örjanlax.png";
 
 const world = { width: 900, height: 600, ground: 528 };
 const bird = { x: 190, y: 280, radius: 20, velocity: 0, rotation: 0 };
@@ -122,8 +124,8 @@ function update(delta) {
 
 function drawBackground() {
   const sky = ctx.createLinearGradient(0, 0, 0, world.height);
-  sky.addColorStop(0, "#66c9e8");
-  sky.addColorStop(1, "#d5f1de");
+  sky.addColorStop(0, "#e36b3d");
+  sky.addColorStop(1, "#f5c36b");
   ctx.fillStyle = sky;
   ctx.fillRect(0, 0, world.width, world.height);
   ctx.fillStyle = "rgba(255,255,255,.42)";
@@ -135,7 +137,7 @@ function drawBackground() {
     ctx.arc(x + 69, y, 24, Math.PI, 0);
     ctx.fill();
   }
-  ctx.fillStyle = "#91cc8c";
+  ctx.fillStyle = "#7f9b54";
   ctx.beginPath();
   ctx.moveTo(0, world.ground);
   for (let x = 0; x <= world.width; x += 55)
@@ -143,20 +145,20 @@ function drawBackground() {
   ctx.lineTo(world.width, world.height);
   ctx.lineTo(0, world.height);
   ctx.fill();
-  ctx.fillStyle = "#f4d76b";
+  ctx.fillStyle = "#d49b3d";
   ctx.fillRect(0, world.ground, world.width, world.height - world.ground);
-  ctx.fillStyle = "#68a66f";
+  ctx.fillStyle = "#4f6039";
   ctx.fillRect(0, world.ground, world.width, 8);
 }
 
 function drawPipe(x, y, height, top) {
-  ctx.fillStyle = "#388b62";
+  ctx.fillStyle = "#6f3025";
   ctx.fillRect(x, y, settings.pipeWidth, height);
-  ctx.fillStyle = "#5fbd79";
+  ctx.fillStyle = "#c4532f";
   ctx.fillRect(x + 10, y, 16, height);
-  ctx.fillStyle = "#236647";
+  ctx.fillStyle = "#3e1f1c";
   ctx.fillRect(x + settings.pipeWidth - 10, y, 10, height);
-  ctx.fillStyle = "#4da76b";
+  ctx.fillStyle = "#9c3f2c";
   ctx.fillRect(x - 8, top ? y + height - 20 : y, settings.pipeWidth + 16, 20);
 }
 
@@ -173,37 +175,12 @@ function drawPipes() {
 }
 
 function drawBird() {
+  const width = 40;
+  const height = 74;
   ctx.save();
   ctx.translate(bird.x, bird.y);
   ctx.rotate(bird.rotation);
-  ctx.fillStyle = "#f15a4a";
-  ctx.beginPath();
-  ctx.ellipse(-2, 3, 21, 17, 0, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = "#ffd568";
-  ctx.beginPath();
-  ctx.ellipse(-5, 8, 12, 8, -0.25, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = "#f15a4a";
-  ctx.beginPath();
-  ctx.moveTo(-19, 1);
-  ctx.lineTo(-34, -10);
-  ctx.lineTo(-28, 10);
-  ctx.fill();
-  ctx.fillStyle = "#fffdf2";
-  ctx.beginPath();
-  ctx.arc(9, -7, 8, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = "#173b4a";
-  ctx.beginPath();
-  ctx.arc(12, -7, 3, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = "#ef9d3b";
-  ctx.beginPath();
-  ctx.moveTo(16, 1);
-  ctx.lineTo(35, 6);
-  ctx.lineTo(16, 10);
-  ctx.fill();
+  ctx.drawImage(birdImage, -width / 2, -height / 2, width, height);
   ctx.restore();
 }
 
