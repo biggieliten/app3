@@ -1,356 +1,248 @@
 const canvas = document.querySelector("#gameCanvas");
 const ctx = canvas.getContext("2d");
 const scoreLabel = document.querySelector("#score");
-const statusLabel = document.querySelector("#statusText");
-const message = document.querySelector("#gameMessage");
-const finalScore = document.querySelector("#finalScore");
-const keys = {};
+const bestLabel = document.querySelector("#best");
+const finalScoreLabel = document.querySelector("#finalScore");
+const startOverlay = document.querySelector("#startOverlay");
+const gameOverOverlay = document.querySelector("#gameOverOverlay");
+const muteButton = document.querySelector("#muteButton");
 
-const mapTemplates = [
-  [
-    "SKOGEN",
-    "#9bd1d1",
-    1920,
-    [480, 220, 210, 260, 220, 220],
-    [330, 670, 950, 1170, 1280, 1510, 1790],
-  ],
-  [
-    "SKÄRGÅRDEN",
-    "#83c9df",
-    2040,
-    [330, 190, 180, 180, 180, 190, 320],
-    [275, 500, 760, 1010, 1260, 1530, 1870],
-  ],
-  [
-    "NATTÅGET",
-    "#425a79",
-    2160,
-    [390, 170, 180, 220, 170, 190, 330],
-    [330, 540, 785, 1060, 1160, 1600, 1950],
-  ],
-  [
-    "FJÄLLEN",
-    "#b6d5df",
-    2280,
-    [300, 160, 170, 210, 170, 180, 180, 280],
-    [250, 450, 690, 970, 1215, 1480, 1760],
-  ],
-  [
-    "FIKAFORTET",
-    "#e6b9a8",
-    2400,
-    [360, 150, 150, 150, 190, 170, 190, 180, 220],
-    [300, 490, 720, 950, 1190, 1480, 1720, 1990],
-  ],
-];
-const maps = mapTemplates.map(([name, sky, width, widths, bunXs], mapIndex) => {
-  const starts = [
-    0,
-    ...widths
-      .slice(0, -1)
-      .reduce(
-        (positions, current, index) => [
-          ...positions,
-          positions[index] + current + 90,
-        ],
-        [],
-      ),
-  ];
-  const platforms = starts.map((x, index) => ({
-    x,
-    y: index % 3 === 0 ? 478 : 350 + ((index * 37) % 100),
-    w: widths[index],
-    h: index % 3 === 0 ? 62 : 24,
-  }));
-  return {
-    name,
-    sky,
-    width,
-    platforms,
-    buns: bunXs.map((x, index) => ({
-      x,
-      y: platforms[Math.min(index, platforms.length - 1)].y - 42,
-    })),
-    hazards: starts
-      .slice(1, -1)
-      .filter((x, index) => index % 2 === mapIndex % 2)
-      .map((x, index) => ({
-        x: x - 40,
-        y: platforms[index + 1].y - 22,
-        w: 60,
-      })),
-  };
-});
-
-maps[0].platforms = [
-  { x: 0, y: 478, w: 430, h: 62 },
-  { x: 510, y: 408, w: 210, h: 24 },
-  { x: 800, y: 344, w: 190, h: 24 },
-  { x: 1070, y: 414, w: 190, h: 24 },
-  { x: 1340, y: 326, w: 190, h: 24 },
-  { x: 1610, y: 396, w: 220, h: 24 },
-  { x: 1880, y: 478, w: 40, h: 62 },
-];
-maps[0].buns = [
-  { x: 330, y: 436 },
-  { x: 620, y: 366 },
-  { x: 900, y: 302 },
-  { x: 1150, y: 372 },
-  { x: 1435, y: 284 },
-  { x: 1715, y: 354 },
-  { x: 1895, y: 436 },
-];
-
-let mapIndex = 0;
-let level = maps[mapIndex];
-let player;
-let camera = 0;
-let collected = 0;
-let running = true;
+const world = { width: 900, height: 600, ground: 528 };
+const bird = { x: 190, y: 280, radius: 20, velocity: 0, rotation: 0 };
+const settings = {
+  gravity: 0.42,
+  flap: -7.8,
+  pipeSpeed: 3.3,
+  pipeWidth: 82,
+  gap: 165,
+};
+let pipes = [];
+let score = 0;
+let best = Number(localStorage.getItem("wing-it-best") || 0);
+let state = "ready";
+let muted = false;
 let lastTime = 0;
-const mapLabel = document.querySelector("#mapLabel");
-const briefingNumber = document.querySelector("#briefingNumber");
-const briefingText = document.querySelector("#briefingText");
-const mapNav = document.querySelector("#mapNav");
-function buildMapNav() {
-  mapNav.innerHTML = maps
-    .map(
-      (map, index) =>
-        `<button type="button" data-map="${index}" class="${index === mapIndex ? "active" : ""}">${String(index + 1).padStart(2, "0")} ${map.name}</button>`,
-    )
-    .join("");
-  mapNav.querySelectorAll("button").forEach((button) =>
-    button.addEventListener("click", () => {
-      mapIndex = Number(button.dataset.map);
-      level = maps[mapIndex];
-      reset();
-    }),
-  );
-}
-function reset() {
-  level.buns.forEach((bun) => {
-    bun.got = false;
-  });
-  player = {
-    x: 70,
-    y: 400,
-    w: 28,
-    h: 39,
-    vx: 0,
-    vy: 0,
-    grounded: false,
-    face: 1,
-  };
-  collected = 0;
-  camera = 0;
-  running = true;
-  message.hidden = true;
-  statusLabel.textContent = "KALLSTART";
-  mapLabel.textContent = `${String(mapIndex + 1).padStart(2, "0")} / ${level.name}`;
-  briefingNumber.textContent = String(mapIndex + 1).padStart(2, "0");
-  briefingText.innerHTML = `Återför alla bullar<br />från ${level.name.toLowerCase()}.`;
-  buildMapNav();
+let pipeTimer = 0;
+
+bestLabel.textContent = best;
+
+function resetGame() {
+  bird.y = 280;
+  bird.velocity = 0;
+  bird.rotation = 0;
+  pipes = [];
+  score = 0;
+  pipeTimer = 0;
+  state = "ready";
   updateScore();
+  startOverlay.hidden = false;
+  gameOverOverlay.hidden = true;
 }
+
 function updateScore() {
-  scoreLabel.textContent = String(collected * 150).padStart(4, "0");
+  scoreLabel.textContent = score;
+  bestLabel.textContent = best;
 }
-function hit(a, b) {
+
+function startGame() {
+  if (state !== "ready") return;
+  state = "playing";
+  startOverlay.hidden = true;
+  flap();
+}
+
+function flap() {
+  if (state === "ready") {
+    startGame();
+    return;
+  }
+  if (state === "playing") bird.velocity = settings.flap;
+}
+
+function addPipe() {
+  const margin = 82;
+  const gapTop =
+    margin + Math.random() * (world.ground - settings.gap - margin * 2);
+  pipes.push({ x: world.width + 30, gapTop, counted: false });
+}
+
+function birdBox() {
+  return {
+    x: bird.x - bird.radius + 4,
+    y: bird.y - bird.radius + 4,
+    w: bird.radius * 2 - 8,
+    h: bird.radius * 2 - 8,
+  };
+}
+
+function collidesPipe(pipe) {
+  const box = birdBox();
+  const overlapsX =
+    box.x + box.w > pipe.x && box.x < pipe.x + settings.pipeWidth;
   return (
-    a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y
+    overlapsX &&
+    (box.y < pipe.gapTop || box.y + box.h > pipe.gapTop + settings.gap)
   );
 }
-function update(dt) {
-  if (!running) return;
-  const left = keys.ArrowLeft || keys.a;
-  const right = keys.ArrowRight || keys.d;
-  player.vx = (right ? 4.6 : 0) - (left ? 4.6 : 0);
-  if (player.vx) player.face = Math.sign(player.vx);
-  if ((keys.ArrowUp || keys.w || keys[" "]) && player.grounded) {
-    player.vy = -11.5;
-    player.grounded = false;
+
+function endGame() {
+  if (state !== "playing") return;
+  state = "over";
+  best = Math.max(best, score);
+  localStorage.setItem("wing-it-best", best);
+  updateScore();
+  finalScoreLabel.textContent = score;
+  gameOverOverlay.hidden = false;
+}
+
+function update(delta) {
+  if (state !== "playing") return;
+  const step = Math.min(delta / 16.67, 2);
+  bird.velocity += settings.gravity * step;
+  bird.y += bird.velocity * step;
+  bird.rotation = Math.min(Math.PI / 2, Math.max(-0.45, bird.velocity * 0.08));
+  pipeTimer += delta;
+  if (pipeTimer > 1500) {
+    pipeTimer = 0;
+    addPipe();
   }
-  player.vy += 0.55;
-  player.x += player.vx;
-  player.y += player.vy;
-  player.x = Math.max(0, Math.min(level.width - player.w, player.x));
-  player.grounded = false;
-  level.platforms.forEach((platform) => {
-    if (
-      player.vy >= 0 &&
-      player.x + player.w > platform.x &&
-      player.x < platform.x + platform.w &&
-      player.y + player.h >= platform.y &&
-      player.y + player.h - player.vy <= platform.y
-    ) {
-      player.y = platform.y - player.h;
-      player.vy = 0;
-      player.grounded = true;
-    }
-  });
-  level.hazards.forEach((hazard) => {
-    if (hit(player, { x: hazard.x, y: hazard.y, w: hazard.w, h: 22 })) fail();
-  });
-  level.buns.forEach((bun) => {
-    if (
-      !bun.got &&
-      hit(player, { x: bun.x - 14, y: bun.y - 14, w: 28, h: 28 })
-    ) {
-      bun.got = true;
-      collected++;
+  pipes.forEach((pipe) => {
+    pipe.x -= settings.pipeSpeed * step;
+    if (!pipe.counted && pipe.x + settings.pipeWidth < bird.x) {
+      pipe.counted = true;
+      score += 1;
       updateScore();
-      statusLabel.textContent = `${collected} / 7 SÄKRADE`;
     }
+    if (collidesPipe(pipe)) endGame();
   });
-  if (player.y > canvas.height + 80) fail();
-  if (collected === level.buns.length && player.x > level.width - 100) win();
-  camera +=
-    (Math.max(
-      0,
-      Math.min(level.width - canvas.width, player.x - canvas.width * 0.38),
-    ) -
-      camera) *
-    0.12;
+  pipes = pipes.filter((pipe) => pipe.x > -settings.pipeWidth - 10);
+  if (bird.y - bird.radius < 0 || bird.y + bird.radius > world.ground)
+    endGame();
 }
-function fail() {
-  player.x = 70;
-  player.y = 400;
-  player.vy = 0;
-  statusLabel.textContent = "FÖRSÖK IGEN";
+
+function drawBackground() {
+  const sky = ctx.createLinearGradient(0, 0, 0, world.height);
+  sky.addColorStop(0, "#66c9e8");
+  sky.addColorStop(1, "#d5f1de");
+  ctx.fillStyle = sky;
+  ctx.fillRect(0, 0, world.width, world.height);
+  ctx.fillStyle = "rgba(255,255,255,.42)";
+  for (let x = -40; x < world.width + 100; x += 210) {
+    const y = 85 + ((x * 7) % 100);
+    ctx.beginPath();
+    ctx.arc(x, y, 27, Math.PI, 0);
+    ctx.arc(x + 30, y, 34, Math.PI, 0);
+    ctx.arc(x + 69, y, 24, Math.PI, 0);
+    ctx.fill();
+  }
+  ctx.fillStyle = "#91cc8c";
+  ctx.beginPath();
+  ctx.moveTo(0, world.ground);
+  for (let x = 0; x <= world.width; x += 55)
+    ctx.lineTo(x, world.ground - 30 - Math.sin(x * 0.025) * 24);
+  ctx.lineTo(world.width, world.height);
+  ctx.lineTo(0, world.height);
+  ctx.fill();
+  ctx.fillStyle = "#f4d76b";
+  ctx.fillRect(0, world.ground, world.width, world.height - world.ground);
+  ctx.fillStyle = "#68a66f";
+  ctx.fillRect(0, world.ground, world.width, 8);
 }
-function win() {
-  running = false;
-  finalScore.textContent = scoreLabel.textContent;
-  message.hidden = false;
-  statusLabel.textContent = "UPPDRAG KLART";
-  document.querySelector("#playAgain").innerHTML =
-    mapIndex < maps.length - 1
-      ? "NÄSTA KARTA <span>→</span>"
-      : "BÖRJA OM FRÅN KARTA 1 <span>↻</span>";
+
+function drawPipe(x, y, height, top) {
+  ctx.fillStyle = "#388b62";
+  ctx.fillRect(x, y, settings.pipeWidth, height);
+  ctx.fillStyle = "#5fbd79";
+  ctx.fillRect(x + 10, y, 16, height);
+  ctx.fillStyle = "#236647";
+  ctx.fillRect(x + settings.pipeWidth - 10, y, 10, height);
+  ctx.fillStyle = "#4da76b";
+  ctx.fillRect(x - 8, top ? y + height - 20 : y, settings.pipeWidth + 16, 20);
 }
-function nextMap() {
-  mapIndex = (mapIndex + 1) % maps.length;
-  level = maps[mapIndex];
-  reset();
+
+function drawPipes() {
+  pipes.forEach((pipe) => {
+    drawPipe(pipe.x, 0, pipe.gapTop, true);
+    drawPipe(
+      pipe.x,
+      pipe.gapTop + settings.gap,
+      world.ground - pipe.gapTop - settings.gap,
+      false,
+    );
+  });
+}
+
+function drawBird() {
+  ctx.save();
+  ctx.translate(bird.x, bird.y);
+  ctx.rotate(bird.rotation);
+  ctx.fillStyle = "#f15a4a";
+  ctx.beginPath();
+  ctx.ellipse(-2, 3, 21, 17, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "#ffd568";
+  ctx.beginPath();
+  ctx.ellipse(-5, 8, 12, 8, -0.25, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "#f15a4a";
+  ctx.beginPath();
+  ctx.moveTo(-19, 1);
+  ctx.lineTo(-34, -10);
+  ctx.lineTo(-28, 10);
+  ctx.fill();
+  ctx.fillStyle = "#fffdf2";
+  ctx.beginPath();
+  ctx.arc(9, -7, 8, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "#173b4a";
+  ctx.beginPath();
+  ctx.arc(12, -7, 3, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "#ef9d3b";
+  ctx.beginPath();
+  ctx.moveTo(16, 1);
+  ctx.lineTo(35, 6);
+  ctx.lineTo(16, 10);
+  ctx.fill();
+  ctx.restore();
 }
 
 function draw() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.save();
-  ctx.translate(-camera, 0);
-  ctx.fillStyle = "#9bd1d1";
-  ctx.fillRect(camera, 0, canvas.width, canvas.height);
-  ctx.fillStyle = "#b9dcdc";
-  for (let x = -100; x < level.width + 100; x += 170) {
-    ctx.beginPath();
-    ctx.arc(x, 170 + (x % 100), 88, Math.PI, Math.PI * 2);
-    ctx.fill();
-  }
-  ctx.fillStyle = "#e8f0de";
-  for (let x = -100; x < level.width + 100; x += 260) {
-    ctx.beginPath();
-    ctx.moveTo(x, 478);
-    ctx.lineTo(x + 120, 280);
-    ctx.lineTo(x + 280, 478);
-    ctx.fill();
-  }
-  level.platforms.forEach((platform) => {
-    ctx.fillStyle = "#174d7c";
-    ctx.fillRect(platform.x, platform.y, platform.w, platform.h);
-    ctx.fillStyle = "#f4c748";
-    ctx.fillRect(platform.x, platform.y, platform.w, 6);
-    ctx.fillStyle = "rgba(255,255,255,.12)";
-    for (let x = platform.x + 10; x < platform.x + platform.w; x += 22)
-      ctx.fillRect(x, platform.y + 13, 2, platform.h - 17);
-  });
-  level.hazards.forEach((hazard) => {
-    ctx.fillStyle = "#e14a3b";
-    for (let x = hazard.x; x < hazard.x + hazard.w; x += 14) {
-      ctx.beginPath();
-      ctx.moveTo(x, hazard.y + 22);
-      ctx.lineTo(x + 7, hazard.y);
-      ctx.lineTo(x + 14, hazard.y + 22);
-      ctx.fill();
-    }
-  });
-  level.buns.forEach((bun) => {
-    if (bun.got) return;
-    ctx.save();
-    ctx.translate(bun.x, bun.y);
-    ctx.rotate(-0.15);
-    ctx.fillStyle = "#f4c748";
-    ctx.beginPath();
-    ctx.arc(0, 0, 14, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = "#e59c33";
-    ctx.fillRect(-8, -2, 16, 3);
-    ctx.fillRect(-6, 5, 12, 3);
-    ctx.restore();
-  });
-  drawPlayer();
-  drawFinish();
-  ctx.restore();
+  ctx.clearRect(0, 0, world.width, world.height);
+  drawBackground();
+  drawPipes();
+  drawBird();
 }
-function drawPlayer() {
-  ctx.save();
-  ctx.translate(player.x + player.w / 2, player.y + player.h / 2);
-  ctx.scale(player.face, 1);
-  ctx.fillStyle = "#e14a3b";
-  ctx.fillRect(-13, -19, 26, 10);
-  ctx.fillStyle = "#f4c748";
-  ctx.fillRect(-11, -9, 22, 22);
-  ctx.fillStyle = "#10283b";
-  ctx.fillRect(-9, 13, 7, 8);
-  ctx.fillRect(3, 13, 7, 8);
-  ctx.fillRect(2, -5, 4, 4);
-  ctx.fillRect(-8, -5, 4, 4);
-  ctx.restore();
-}
-function drawFinish() {
-  const finishX = level.width - 80;
-  ctx.fillStyle = "#10283b";
-  ctx.fillRect(finishX, 390, 7, 88);
-  ctx.fillStyle = "#f4c748";
-  ctx.beginPath();
-  ctx.moveTo(finishX + 7, 394);
-  ctx.lineTo(finishX + 60, 410);
-  ctx.lineTo(finishX + 7, 426);
-  ctx.fill();
-  ctx.fillStyle = "#fff";
-  ctx.font = "11px DM Mono";
-  ctx.fillText("FIKA", finishX + 17, 414);
-}
+
 function loop(time) {
-  const dt = Math.min((time - lastTime) / 16.67 || 1, 2);
+  const delta = Math.min(time - lastTime || 16.67, 40);
   lastTime = time;
-  update(dt);
+  update(delta);
   draw();
   requestAnimationFrame(loop);
 }
 
+function handleInput(event) {
+  if (event) event.preventDefault();
+  if (state === "over") {
+    resetGame();
+    startGame();
+    return;
+  }
+  flap();
+}
+
+document.querySelector("#startButton").addEventListener("click", handleInput);
+document.querySelector("#restartButton").addEventListener("click", handleInput);
+canvas.addEventListener("pointerdown", handleInput);
 window.addEventListener("keydown", (event) => {
-  keys[event.key] = true;
-  if (
-    ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", " "].includes(event.key)
-  )
-    event.preventDefault();
+  if (event.code === "Space" || event.code === "ArrowUp") handleInput(event);
 });
-window.addEventListener("keyup", (event) => {
-  keys[event.key] = false;
+muteButton.addEventListener("click", () => {
+  muted = !muted;
+  muteButton.textContent = muted ? "SOUND OFF" : "SOUND ON";
+  muteButton.setAttribute("aria-pressed", String(muted));
 });
-document.querySelector("#resetButton").addEventListener("click", reset);
-document.querySelector("#playAgain").addEventListener("click", nextMap);
-canvas.addEventListener("pointerdown", (event) => {
-  const rect = canvas.getBoundingClientRect();
-  const x = event.clientX - rect.left;
-  if (x < rect.width * 0.35) keys.ArrowLeft = true;
-  else if (x < rect.width * 0.67) keys.ArrowRight = true;
-  else keys.ArrowUp = true;
-});
-canvas.addEventListener("pointerup", () => {
-  keys.ArrowLeft = false;
-  keys.ArrowRight = false;
-  keys.ArrowUp = false;
-});
-reset();
+
+resetGame();
 requestAnimationFrame(loop);

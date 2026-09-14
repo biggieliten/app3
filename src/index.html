@@ -1,67 +1,61 @@
 <!doctype html>
-<html lang="sv">
+<html lang="en">
 
 <head>
 	<meta charset="UTF-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-	<title>Operativ: Kanelbulle</title>
+	<title>Wing It</title>
 	<link rel="preconnect" href="https://fonts.googleapis.com" />
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 	<link
-		href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap"
+		href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap"
 		rel="stylesheet" />
 	<link rel="stylesheet" href="style.css" />
 </head>
 
 <body>
-	<main class="shell">
+	<main class="page-shell">
 		<header class="topbar">
-			<a class="brand" href="#game" aria-label="Operativ Kanelbulle hem">
-				<span class="brand-mark"><i></i><i></i><i></i></span>
-				<span><b>OPERATIV</b><strong>KANELBULLE</strong></span>
-			</a>
-			<div class="status"><span class="status-dot"></span> ÖVNING PÅGÅR <span class="divider">/</span> SEKTOR 04
-			</div>
+			<a class="logo" href="#game" aria-label="Wing It home"><span
+					class="logo-mark"><i></i><i></i></span><span>WING <b>IT</b></span></a>
+			<div class="top-note"><span class="live-dot"></span> SKYWAY 01 / LIVE</div>
 		</header>
-
 		<section class="intro">
 			<div>
-				<p class="eyebrow">HEMLIGT MEN INTE SÅ ALLVARLIGT</p>
-				<h1>Spring. Hoppa.<br /><em>Skydda fikat.</em></h1>
-				<p class="lede">En blågul plattformsexpedition genom den svenska vardagen. Samla kanelbullar, undvik
-					surströmming och nå den hemliga fikapausen.</p>
+				<p class="eyebrow">A TINY BIRD. A VERY BIG SKY.</p>
+				<h1>Keep it<br /><em>airborne.</em></h1>
+				<p class="lede">Tap to flap through the pipe parade. Every gap is a choice, every point is bragging
+					rights.</p>
 			</div>
-			<div class="briefing"><span>UPPDRAG</span><b id="briefingNumber">01</b>
-				<p id="briefingText">Återför alla bullar<br />till säker zon.</p>
-			</div>
+			<div class="tip-card"><span>FLIGHT TIP</span><strong>One tap.<br />One flap.</strong><small>Do not overthink
+					the bird.</small></div>
 		</section>
-
-		<section class="game-wrap" id="game">
-			<div class="game-meta">
-				<div><span>AGENT</span><b>07 / LILLA LOTTA</b></div>
-				<div><span>KARTA</span><b id="mapLabel">01 / SKOGEN</b></div>
-				<div><span>POÄNG</span><b id="score">0000</b></div>
-				<div><span>FIKA-STATUS</span><b id="statusText">KALLSTART</b></div>
-				<button class="reset-button" id="resetButton" type="button">STARTA OM <span>↻</span></button>
+		<section class="game-card" id="game">
+			<div class="scorebar">
+				<div><span>SCORE</span><b id="score">0</b></div>
+				<div><span>BEST</span><b id="best">0</b></div>
+				<button id="muteButton" class="icon-button" type="button" aria-label="Toggle sound"
+					aria-pressed="false">SOUND ON</button>
 			</div>
-			<nav class="map-nav" aria-label="Välj karta" id="mapNav"></nav>
-			<div class="canvas-frame">
-				<canvas id="gameCanvas" width="960" height="540"
-					aria-label="Plattformsspel: styr agenten med piltangenterna och samla bullar"></canvas>
-				<div class="game-message" id="gameMessage" hidden>
-					<p class="eyebrow">UPPDRAG KLART</p>
-					<h2>Fikat är säkrat.</h2>
-					<p>Du levererade <strong id="finalScore">0000</strong> poäng av ren svensk pliktkänsla.</p>
-					<button id="playAgain" type="button">NÄSTA KARTA <span>→</span></button>
+			<div class="canvas-wrap">
+				<canvas id="gameCanvas" width="900" height="600" aria-label="Flappy bird style game"></canvas>
+				<div class="game-overlay" id="startOverlay">
+					<p class="eyebrow">READY FOR TAKEOFF?</p>
+					<h2>Flap into<br /><em>the blue.</em></h2>
+					<p>Press space, click, or tap to fly.</p>
+					<button id="startButton" type="button">START FLYING <span>-&gt;</span></button>
+				</div>
+				<div class="game-overlay" id="gameOverOverlay" hidden>
+					<p class="eyebrow">FLIGHT LOG CLOSED</p>
+					<h2>Nice try,<br /><em>brave bird.</em></h2>
+					<p>You scored <strong id="finalScore">0</strong>. The sky will still be here.</p>
+					<button id="restartButton" type="button">TRY AGAIN <span>↻</span></button>
 				</div>
 			</div>
-			<div class="controls">
-				<span><kbd>←</kbd><kbd>→</kbd> spring</span><span><kbd>↑</kbd> eller <kbd>W</kbd> hoppa</span><span
-					class="touch-note">Tryck på skärmen för touchkontroller</span>
-			</div>
+			<div class="controls"><span><kbd>SPACE</kbd> flap</span><span><kbd>CLICK</kbd> flap</span><span
+					class="control-note">Aim for the gap</span></div>
 		</section>
-
-		<footer><span>FIKASEKTIONEN · INTERN ÖVNING</span><span>© 2025 (FIKTIVT)</span></footer>
+		<footer><span>WING IT / A VERY SMALL ARCADE GAME</span><span>MADE FOR SUNNY DAYS</span></footer>
 	</main>
 	<script src="main.js"></script>
 </body>
