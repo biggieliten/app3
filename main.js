@@ -6,6 +6,10 @@ const finalScoreLabel = document.querySelector("#finalScore");
 const startOverlay = document.querySelector("#startOverlay");
 const gameOverOverlay = document.querySelector("#gameOverOverlay");
 const muteButton = document.querySelector("#muteButton");
+const leaderboardList = document.querySelector("#leaderboardList");
+const leaderboardStatus = document.querySelector("#leaderboardStatus");
+const leaderboardEndpoint =
+  "https://script.google.com/macros/s/AKfycbwYFg7LTrHtgoliJmC5MmgMbMCOKP5Wvl8DLGGBrUBogev4YoNnJzSTTq-O2tUUFY_E/exec";
 const birdImage = new Image();
 birdImage.src = "örjanlax.png";
 
@@ -87,6 +91,78 @@ function collidesPipe(pipe) {
   );
 }
 
+async function submitScore(finalScore) {
+  if (!leaderboardEndpoint) return;
+
+  const name = prompt("Enter your name for the leaderboard:", "")?.trim();
+  if (!name) return;
+
+  try {
+    const response = await fetch(leaderboardEndpoint, {
+      method: "POST",
+      body: JSON.stringify({
+        name: name.slice(0, 20),
+        score: Math.max(0, Math.floor(finalScore)),
+      }),
+    });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    await loadLeaderboard();
+  } catch (error) {
+    console.error("Could not submit leaderboard score", error);
+  }
+}
+
+function renderLeaderboard(scores) {
+  leaderboardList.replaceChildren();
+
+  if (!scores.length) {
+    leaderboardStatus.textContent = "No scores yet. Be the first one in.";
+    return;
+  }
+
+  leaderboardStatus.textContent = "Top 10 all-time scores";
+  scores.forEach((entry, index) => {
+    const row = document.createElement("li");
+    row.className =
+      index < 3 ? `leaderboard-row rank-${index + 1}` : "leaderboard-row";
+
+    const rank = document.createElement("span");
+    rank.className = "leaderboard-rank";
+    rank.textContent = `${index + 1}.`;
+
+    const name = document.createElement("span");
+    name.className = "leaderboard-name";
+    name.textContent = entry.name;
+
+    const scoreValue = document.createElement("strong");
+    scoreValue.className = "leaderboard-score";
+    scoreValue.textContent = `score: ${entry.score}`;
+
+    row.append(rank, name, scoreValue);
+    leaderboardList.append(row);
+  });
+}
+
+async function loadLeaderboard() {
+  if (!leaderboardEndpoint) return;
+
+  leaderboardStatus.textContent = "Loading the rage board...";
+  try {
+    const response = await fetch(leaderboardEndpoint, { cache: "no-store" });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+    const result = await response.json();
+    if (!result.ok || !Array.isArray(result.scores)) {
+      throw new Error("Invalid leaderboard response");
+    }
+
+    renderLeaderboard(result.scores);
+  } catch (error) {
+    leaderboardStatus.textContent = "Leaderboard unavailable right now.";
+    console.error("Could not load leaderboard", error);
+  }
+}
+
 function endGame() {
   if (state !== "playing") return;
   state = "over";
@@ -95,6 +171,7 @@ function endGame() {
   updateScore();
   finalScoreLabel.textContent = score;
   gameOverOverlay.hidden = false;
+  submitScore(score);
 }
 
 function update(delta) {
@@ -222,4 +299,5 @@ muteButton.addEventListener("click", () => {
 });
 
 resetGame();
+loadLeaderboard();
 requestAnimationFrame(loop);
