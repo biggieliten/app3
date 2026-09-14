@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="sv">
+
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>Operativ: Kanelbulle</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com" />
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+	<link
+		href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap"
+		rel="stylesheet" />
+	<link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+	<main class="shell">
+		<header class="topbar">
+			<a class="brand" href="#game" aria-label="Operativ Kanelbulle hem">
+				<span class="brand-mark"><i></i><i></i><i></i></span>
+				<span><b>OPERATIV</b><strong>KANELBULLE</strong></span>
+			</a>
+			<div class="status"><span class="status-dot"></span> ÖVNING PÅGÅR <span class="divider">/</span> SEKTOR 04
+			</div>
+		</header>
+
+		<section class="intro">
+			<div>
+				<p class="eyebrow">HEMLIGT MEN INTE SÅ ALLVARLIGT</p>
+				<h1>Spring. Hoppa.<br /><em>Skydda fikat.</em></h1>
+				<p class="lede">En blågul plattformsexpedition genom den svenska vardagen. Samla kanelbullar, undvik
+					surströmming och nå den hemliga fikapausen.</p>
+			</div>
+			<div class="briefing"><span>UPPDRAG</span><b id="briefingNumber">01</b>
+				<p id="briefingText">Återför alla bullar<br />till säker zon.</p>
+			</div>
+		</section>
+
+		<section class="game-wrap" id="game">
+			<div class="game-meta">
+				<div><span>AGENT</span><b>07 / LILLA LOTTA</b></div>
+				<div><span>KARTA</span><b id="mapLabel">01 / SKOGEN</b></div>
+				<div><span>POÄNG</span><b id="score">0000</b></div>
+				<div><span>FIKA-STATUS</span><b id="statusText">KALLSTART</b></div>
+				<button class="reset-button" id="resetButton" type="button">STARTA OM <span>↻</span></button>
+			</div>
+			<nav class="map-nav" aria-label="Välj karta" id="mapNav"></nav>
+			<div class="canvas-frame">
+				<canvas id="gameCanvas" width="960" height="540"
+					aria-label="Plattformsspel: styr agenten med piltangenterna och samla bullar"></canvas>
+				<div class="game-message" id="gameMessage" hidden>
+					<p class="eyebrow">UPPDRAG KLART</p>
+					<h2>Fikat är säkrat.</h2>
+					<p>Du levererade <strong id="finalScore">0000</strong> poäng av ren svensk pliktkänsla.</p>
+					<button id="playAgain" type="button">NÄSTA KARTA <span>→</span></button>
+				</div>
+			</div>
+			<div class="controls">
+				<span><kbd>←</kbd><kbd>→</kbd> spring</span><span><kbd>↑</kbd> eller <kbd>W</kbd> hoppa</span><span
+					class="touch-note">Tryck på skärmen för touchkontroller</span>
+			</div>
+		</section>
+
+		<footer><span>FIKASEKTIONEN · INTERN ÖVNING</span><span>© 2025 (FIKTIVT)</span></footer>
+	</main>
+	<script src="main.js"></script>
+</body>
+
+</html>
